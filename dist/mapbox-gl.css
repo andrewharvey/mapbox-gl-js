@@ -317,6 +317,37 @@
     will-change: transform;
 }
 
+.mapboxgl-user-location-dot {
+    background-color: #1DA1F2;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    box-shadow: 0 0 2px rgba(0,0,0,0.25);
+    border: 3px solid #fff;
+}
+.mapboxgl-user-location-dot:after {
+    content: '';
+    display: block;
+    box-shadow: #1DA1F2 0 0 0 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    position: relative;
+    top: -3px;
+    left: -3px;
+    -webkit-animation: pulse 2s;
+    -moz-animation: pulse 2s;
+    -ms-animation: pulse 2s;
+    animation: pulse 2s;
+    -webkit-animation-iteration-count: infinite;
+    -moz-animation-iteration-count: infinite;
+    -ms-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+}
+.mapboxgl-user-location-dot-stale {
+    background-color: #333;
+}
+
 .mapboxgl-crosshair,
 .mapboxgl-crosshair .mapboxgl-interactive,
 .mapboxgl-crosshair .mapboxgl-interactive:active {

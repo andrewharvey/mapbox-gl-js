@@ -11,10 +11,6 @@ const defaultGeoPositionOptions = { enableHighAccuracy: false, timeout: 6000 /* 
 const defaultFitBoundsOptions = { maxZoom: 18 };
 const className = 'mapboxgl-ctrl';
 
-const markerLayerName = '_geolocate-control-marker';
-const markerShadowLayerName = '_geolocate-control-marker-shadow';
-const markerSourceName = '_geolocate-control-marker-position';
-
 let supportsGeolocation;
 
 function checkGeolocationSupport(callback) {
@@ -57,19 +53,13 @@ function checkGeolocationSupport(callback) {
  * @param {Object} [options.fitBoundsOptions={maxZoom: 18}] A [`fitBounds`](#Map#fitBounds) options object to use when the map is panned and zoomed to the user's location. The default is to use a `maxZoom` of 18 to limit how far the map will zoom in for very accurate locations.
  * @param {Object} [options.trackUserLocation=false] If `true` the Geolocate Control becomes a toggle button and when active the map will receive updates to the user's location as it changes.
  * @param {Object} [options.showUserLocation=true] By default a dot will be shown on the map at the user's location. Set to `false` to disable.
- * @param {Object} [options.userLocationPaintProperties={'circle-radius': 10, 'circle-color': '#33b5e5', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the user's location dot. The default is a blue dot with a white stroke.
- * @param {Object} [options.userLocationShadowPaintProperties={ 'circle-radius': 14, 'circle-color': '#000', 'circle-opacity': 0.5, 'circle-blur': 0.4, 'circle-translate': [2, 2], 'circle-translate-anchor': 'viewport' }] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object to customize the user's location dot, used as a "shadow" layer. The default is a blurred semi-transparent black shadow.
- * @param {Object} [options.userLocationStalePaintProperties={'circle-color': '#a6d5e5', 'circle-opacity': 0.5, 'circle-stroke-opacity': 0.8}] A [Circle Layer Paint Properties](https://www.mapbox.com/mapbox-gl-style-spec/#paint_circle) object applied to the base userLocationPaintProperties to customize the user's location dot in a stale state. The dot is stale when there was a Geolocation error leading to the previous reported location to be used, which may no longer be current. The default is a faded blue dot with a white stroke.
  *
  * @example
  * map.addControl(new mapboxgl.GeolocateControl({
  *     positionOptions: {
  *         enableHighAccuracy: true
  *     },
- *     trackUserLocation: true,
- *     userLocationPaintProperties: {
- *         'circle-color': '#000'
- *     }
+ *     trackUserLocation: true
  * }));
  */
 class GeolocateControl extends Evented {
@@ -109,8 +99,7 @@ class GeolocateControl extends Evented {
 
         // clear the marker from the map
         if (this.options.showUserLocation) {
-            if (this._map.getLayer(markerLayerName)) this._map.removeLayer(markerLayerName);
-            if (this._map.getSource(markerSourceName)) this._map.removeSource(markerSourceName);
+            this._userLocationDotMarker.remove();
         }
 
         this._container.parentNode.removeChild(this._container);
@@ -158,10 +147,7 @@ class GeolocateControl extends Evented {
         }
 
         if (this.options.showUserLocation) {
-            // restore any paint properties which were changed to make the marker stale
-            for (const paintProperty in this._userLocationStalePaintProperties) {
-                this._map.setPaintProperty(markerLayerName, paintProperty, this._userLocationPaintProperties[paintProperty]);
-            }
+            this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
         }
 
         if (this._watchState === 'ACTIVE_LOCK') {
@@ -183,24 +169,9 @@ class GeolocateControl extends Evented {
 
     _updateMarker(position) {
         if (position) {
-            this._map.getSource(markerSourceName).setData({
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "properties": {
-                        "accuracy": position.coords.accuracy
-                    },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [position.coords.longitude, position.coords.latitude]
-                    }
-                }]
-            });
+            this._userLocationDotMarker.setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this._map);
         } else {
-            this._map.getSource(markerSourceName).setData({
-                "type": "FeatureCollection",
-                "features": []
-            });
+            this._userLocationDotMarker.remove();
         }
     }
 
@@ -248,10 +219,7 @@ class GeolocateControl extends Evented {
         }
 
         if (this._watchState !== 'OFF' && this.options.showUserLocation) {
-            // apply paint properties to make the marker stale
-            for (const paintProperty in this._userLocationStalePaintProperties) {
-                this._map.setPaintProperty(markerLayerName, paintProperty, this._userLocationStalePaintProperties[paintProperty]);
-            }
+            this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
         }
 
         this.fire('error', error);
@@ -309,59 +277,16 @@ class GeolocateControl extends Evented {
     }
 
     _setupMarker() {
-        const defaultMarkerPaintProperties = {
-            'circle-radius': 9,
-            'circle-color': '#33b5e5',
-            'circle-stroke-color': '#fff',
-            'circle-stroke-width': 3
-        };
-        const defaultMarkerShadowPaintProperties = {
-            'circle-radius': 14,
-            'circle-color': '#000',
-            'circle-opacity': 0.5,
-            'circle-blur': 0.4,
-            'circle-translate': [2, 2],
-            'circle-translate-anchor': 'viewport'
-        };
-        const defaultMarkerStalePaintProperties = {
-            'circle-color': '#a6d5e5',
-            'circle-opacity': 0.5,
-            'circle-stroke-opacity': 0.8
-        };
+        this._dotElement = document.createElement('div');
+        this._dotElement.className = 'mapboxgl-user-location-dot';
 
-        this._userLocationPaintProperties = this.options.userLocationPaintProperties || defaultMarkerPaintProperties;
-        this._userLocationShadowPaintProperties = this.options.userLocationShadowPaintProperties || defaultMarkerShadowPaintProperties;
-        this._userLocationStalePaintProperties = util.extend({}, this._userLocationPaintProperties, this.options.userLocationStalePaintProperties || defaultMarkerStalePaintProperties);
+        this._userLocationDotMarker = new mapboxgl.Marker(this._dotElement, { offset: [-10, -10] });
 
-        // sources can't be added until the Map style is loaded
-        this._map.on('load', () => {
-            this._map.addSource(markerSourceName, {
-                type: 'geojson',
-                data: {
-                    type: 'FeatureCollection',
-                    features: []
-                }
-            });
+        if (this.options.trackUserLocation) this._watchState = 'OFF';
 
-            this._map.addLayer({
-                id: markerShadowLayerName,
-                source: markerSourceName,
-                type: 'circle',
-                paint: this._userLocationShadowPaintProperties
-            });
-            this._map.addLayer({
-                id: markerLayerName,
-                source: markerSourceName,
-                type: 'circle',
-                paint: this._userLocationPaintProperties
-            });
+        this._geolocateButton.disabled = false;
 
-            if (this.options.trackUserLocation) this._watchState = 'OFF';
-
-            this._geolocateButton.disabled = false;
-
-            this.fire('ready');
-        });
+        this.fire('ready');
     }
 
     _onClickGeolocate() {
