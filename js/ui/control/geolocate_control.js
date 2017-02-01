@@ -286,7 +286,7 @@ class GeolocateControl extends Evented {
         this._dotElement = document.createElement('div');
         this._dotElement.className = 'mapboxgl-user-location-dot';
 
-        this._userLocationDotMarker = new mapboxgl.Marker(this._dotElement, { offset: [-10, -10] });
+        this._userLocationDotMarker = new mapboxgl.Marker(this._dotElement, { offset: [-13, -13] });
 
         if (this.options.trackUserLocation) this._watchState = 'OFF';
 
