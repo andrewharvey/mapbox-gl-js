@@ -370,7 +370,10 @@
     }
 }
 .mapboxgl-user-location-dot-stale {
-    background-color: #333;
+    background-color: #aaa;
+}
+.mapboxgl-user-location-dot-stale:after {
+    display: none
 }
 
 .mapboxgl-crosshair,

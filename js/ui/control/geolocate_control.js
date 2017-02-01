@@ -219,7 +219,7 @@ class GeolocateControl extends Evented {
         }
 
         if (this._watchState !== 'OFF' && this.options.showUserLocation) {
-            this._dotElement.classList.remove('mapboxgl-user-location-dot-stale');
+            this._dotElement.classList.add('mapboxgl-user-location-dot-stale');
         }
 
         this.fire('error', error);
