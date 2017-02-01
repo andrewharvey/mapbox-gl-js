@@ -135,15 +135,15 @@ class GeolocateControl extends Evented {
             this._geolocateButton.classList.remove('waiting');
         }
 
+        // if showUserLocation and the watch state isn't off then update the marker location
+        if (this.options.showUserLocation && this._watchState !== 'OFF') {
+            this._updateMarker(position);
+        }
+
         // if in normal mode (not watch mode), or if in watch mode and the state is active watch
         // then update the camera
         if (!this.options.trackUserLocation || this._watchState === 'ACTIVE_LOCK') {
             this._updateCamera(position);
-        }
-
-        // if showUserLocation and the watch state isn't off then update the marker location
-        if (this.options.showUserLocation && this._watchState !== 'OFF') {
-            this._updateMarker(position);
         }
 
         if (this.options.showUserLocation) {
@@ -169,6 +169,12 @@ class GeolocateControl extends Evented {
 
     _updateMarker(position) {
         if (position) {
+            // due to #3770 Marker elements only appear in world 0 so we must move the camera into world 0
+            if (!util.deepEqual(map.getCenter(), map.getCenter().wrap())) {
+                map.setCenter(map.getCenter().wrap(), {
+                    geolocateSource: true // tag this camera change so it won't cause the control to change to background state
+                });
+            }
             this._userLocationDotMarker.setLngLat([position.coords.longitude, position.coords.latitude]).addTo(this._map);
         } else {
             this._userLocationDotMarker.remove();
