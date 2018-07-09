@@ -186,6 +186,21 @@ class Painter {
         viewportArray.emplaceBack(1, 1);
         this.viewportBuffer = context.createVertexBuffer(viewportArray, posAttributes.members);
         this.viewportVAO = new VertexArrayObject();
+
+        const tessArray = new RasterBoundsArray();
+        const tessStep = EXTENT / 256;
+        for (let row = 0; row < EXTENT; row += tessStep) {
+            tessArray.emplaceBack(0, row, 0, row);
+            tessArray.emplaceBack(0, row + tessStep, 0, row + tessStep);
+            for (let col = 0; col <= EXTENT; col += tessStep) {
+                tessArray.emplaceBack(col, row, col, row);
+                tessArray.emplaceBack(col, row + tessStep, col, row + tessStep);
+            }
+            tessArray.emplaceBack(EXTENT, row + tessStep, EXTENT, row + tessStep);
+            tessArray.emplaceBack(0, row + tessStep, 0, row + tessStep);
+        }
+        this.tessBuffer = context.createVertexBuffer(tessArray, rasterBoundsAttributes.members);
+        this.tessVAO = new VertexArrayObject();
     }
 
     /*

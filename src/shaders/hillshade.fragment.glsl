@@ -1,5 +1,6 @@
 uniform sampler2D u_image;
 varying vec2 v_pos;
+varying vec4 v_pixel;
 
 uniform vec2 u_latrange;
 uniform vec2 u_light;
@@ -8,6 +9,12 @@ uniform vec4 u_highlight;
 uniform vec4 u_accent;
 
 #define PI 3.141592653589793
+
+float getElevation(vec2 coord) {
+    // Convert encoded elevation value to meters
+    vec4 data = texture2D(u_image, coord) * 256.0;
+    return ((data.r * 256.0 * 256.0 + data.g * 256.0 + data.b) / 10.0 - 10000.0);
+}
 
 void main() {
     vec4 pixel = texture2D(u_image, v_pos);

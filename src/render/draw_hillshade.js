@@ -65,10 +65,18 @@ function renderHillshade(painter, tile, layer) {
     context.activeTexture.set(gl.TEXTURE0);
 
     gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
+    //gl.disable(gl.CULL_FACE);
+
+    const pixelData = tile.dem.getPixels();
+    context.activeTexture.set(gl.TEXTURE1);
+    const demTexture = tile.demTexture;
+    demTexture.update(pixelData, { premultiply: false });
+    demTexture.bind(gl.NEAREST, gl.CLAMP_TO_EDGE);
 
     gl.uniformMatrix4fv(program.uniforms.u_matrix, false, posMatrix);
     gl.uniform2fv(program.uniforms.u_latrange, latRange);
     gl.uniform1i(program.uniforms.u_image, 0);
+    gl.uniform1i(program.uniforms.u_imagev, 1);
 
     const shadowColor = layer.paint.get("hillshade-shadow-color");
     gl.uniform4f(program.uniforms.u_shadow, shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a);
@@ -77,21 +85,10 @@ function renderHillshade(painter, tile, layer) {
     const accentColor = layer.paint.get("hillshade-accent-color");
     gl.uniform4f(program.uniforms.u_accent, accentColor.r, accentColor.g, accentColor.b, accentColor.a);
 
-    if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
-        program.draw(
-            context,
-            gl.TRIANGLES,
-            layer.id,
-            tile.maskedBoundsBuffer,
-            tile.maskedIndexBuffer,
-            tile.segments
-        );
-    } else {
-        const buffer = painter.rasterBoundsBuffer;
-        const vao = painter.rasterBoundsVAO;
-        vao.bind(context, program, buffer, []);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
-    }
+    const buffer = painter.tessBuffer;
+    const vao = painter.tessVAO;
+    vao.bind(context, program, buffer, []);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 }
 
 
