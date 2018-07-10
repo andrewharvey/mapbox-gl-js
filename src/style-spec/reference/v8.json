@@ -535,6 +535,13 @@
             }
           }
         },
+        "elevation": {
+          "doc": "A terrain or other elevation of the map",
+          "sdk-support": {
+            "basic functionality": {
+            }
+          }
+        },
         "background": {
           "doc": "The background color or pattern of the map.",
           "sdk-support": {
@@ -596,6 +603,7 @@
     "layout_symbol",
     "layout_raster",
     "layout_hillshade",
+    "layout_elevation",
     "layout_background"
   ],
   "layout_background": {
@@ -2132,6 +2140,27 @@
       "property-type": "constant"
     }
   },
+  "layout_elevation": {
+    "visibility": {
+      "type": "enum",
+      "values": {
+        "visible": {
+          "doc": "The elevation is shown."
+        },
+        "none": {
+          "doc": "The elevation is not shown."
+        }
+      },
+      "default": "visible",
+      "doc": "Whether the elevation is displayed.",
+      "sdk-support": {
+        "basic functionality": {
+        },
+        "data-driven styling": {}
+      },
+      "property-type": "constant"
+    }
+  },
   "filter": {
     "type": "array",
     "value": "*",
@@ -3238,6 +3267,7 @@
     "paint_symbol",
     "paint_raster",
     "paint_hillshade",
+    "paint_elevation",
     "paint_background"
   ],
   "paint_fill": {
@@ -5256,6 +5286,28 @@
           "android": "6.0.0",
           "ios": "4.0.0",
           "macos": "0.7.0"
+        },
+        "data-driven styling": {}
+      },
+      "expression": {
+        "interpolated": true,
+        "parameters": [
+          "zoom"
+        ]
+      },
+      "property-type": "data-constant"
+    }
+  },
+  "paint_elevation": {
+    "elevation-exaggeration": {
+      "type": "number",
+      "doc": "Exaggeration of the elevation",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1000,
+      "transition": true,
+      "sdk-support": {
+        "basic functionality": {
         },
         "data-driven styling": {}
       },

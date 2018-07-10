@@ -147,6 +147,9 @@ const navigation = [
             },
             {
                 "title": "hillshade"
+            },
+            {
+                "title": "elevation"
             }
         ]
     },
@@ -222,7 +225,7 @@ const navigation = [
 ];
 
 const sourceTypes = ['vector', 'raster', 'raster-dem', 'geojson', 'image', 'video'];
-const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade'];
+const layerTypes = ['background', 'fill', 'line', 'symbol', 'raster', 'circle', 'fill-extrusion', 'heatmap', 'hillshade', 'elevation'];
 
 import {expressions, expressionGroups} from '../components/expression-metadata';
 
