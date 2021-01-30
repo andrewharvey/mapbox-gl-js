@@ -595,7 +595,7 @@ function normalizeOffset(offset: ?Offset) {
 
     } else if (typeof offset === 'number') {
         // input specifies a radius from which to calculate offsets at all positions
-        const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2)));
+        const cornerOffset = Math.round(Math.sqrt(0.5 * Math.pow(offset, 2))) * (offset > 0 ? 1 : -1);
         return {
             'center': new Point(0, 0),
             'top': new Point(0, offset),
